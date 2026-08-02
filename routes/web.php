@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Management\BranchController;
+use App\Http\Controllers\Management\TenantController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserEmailResetNotificationController;
@@ -17,6 +19,11 @@ Route::get('/', fn () => Inertia::render('welcome'))->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::get('dashboard', fn () => Inertia::render('dashboard'))->name('dashboard');
+
+    Route::prefix('management')->name('management.')->group(function (): void {
+        Route::resource('tenants', TenantController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::resource('branches', BranchController::class)->only(['index', 'store', 'update', 'destroy']);
+    });
 });
 
 Route::middleware('auth')->group(function (): void {

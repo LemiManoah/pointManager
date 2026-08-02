@@ -15,6 +15,7 @@ import {
     SidebarMenuItem,
     SidebarRail,
 } from '@/components/ui/sidebar';
+import { useCurrentUrl } from '@/hooks/use-current-url';
 
 const items = [
     {
@@ -25,13 +26,13 @@ const items = [
     },
     {
         title: 'Tenants',
-        href: '/dashboard',
+        href: '/management/tenants',
         icon: Building2,
         status: 'ready',
     },
     {
         title: 'Branches',
-        href: '/dashboard',
+        href: '/management/branches',
         icon: GitBranch,
         status: 'ready',
     },
@@ -50,6 +51,8 @@ const items = [
 ] as const;
 
 export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
+    const { isCurrentUrl } = useCurrentUrl();
+
     return (
         <Sidebar collapsible="icon" variant="inset" {...props}>
             <SidebarHeader>
@@ -77,7 +80,10 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
                                         <SidebarMenuButton
                                             asChild={!disabled}
                                             disabled={disabled}
-                                            isActive={!disabled}
+                                            isActive={
+                                                !disabled &&
+                                                isCurrentUrl(item.href)
+                                            }
                                             tooltip={{ children: item.title }}
                                         >
                                             {disabled ? (

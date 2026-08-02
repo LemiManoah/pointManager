@@ -1,0 +1,48 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+/**
+ * @property-read string $id
+ * @property-read string $tenant_id
+ * @property-read string $name
+ * @property-read string $code
+ * @property-read string $country_code
+ * @property-read string $default_currency_code
+ * @property-read string $status
+ * @property-read Tenant|null $tenant
+ */
+#[Fillable(['tenant_id', 'name', 'code', 'country_code', 'default_currency_code', 'status'])]
+final class Branch extends Model
+{
+    use HasUuids;
+    use SoftDeletes;
+
+    /**
+     * @return array<string, string>
+     */
+    public function casts(): array
+    {
+        return [
+            'id' => 'string',
+            'tenant_id' => 'string',
+            'deleted_at' => 'datetime',
+        ];
+    }
+
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class);
+    }
+}
