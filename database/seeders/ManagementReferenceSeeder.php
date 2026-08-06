@@ -50,15 +50,22 @@ final class ManagementReferenceSeeder extends Seeder
             ],
         );
 
-        Branch::query()->updateOrCreate(
-            ['tenant_id' => $tenant->id, 'code' => 'KLA-HQ'],
-            [
-                'name' => 'Kampala Head Office',
-                'country_code' => 'UG',
-                'default_currency_code' => 'UGX',
-                'status' => 'active',
-            ],
-        );
+        foreach ([
+            ['KLA-HQ', 'Kampala Head Office', 'UG', 'UGX', 'active'],
+            ['GUL-SITE', 'Gulu Project Office', 'UG', 'UGX', 'active'],
+            ['JUB-HQ', 'Juba Office', 'SS', 'USD', 'active'],
+            ['KIN-MOB', 'Kinshasa Mobilization Office', 'CD', 'CDF', 'inactive'],
+        ] as [$code, $name, $countryCode, $currencyCode, $status]) {
+            Branch::query()->updateOrCreate(
+                ['tenant_id' => $tenant->id, 'code' => $code],
+                [
+                    'name' => $name,
+                    'country_code' => $countryCode,
+                    'default_currency_code' => $currencyCode,
+                    'status' => $status,
+                ],
+            );
+        }
 
         User::query()->updateOrCreate(
             ['email' => 'support@pointmanager.test'],
@@ -66,6 +73,7 @@ final class ManagementReferenceSeeder extends Seeder
                 'name' => 'Support Admin',
                 'password' => 'password',
                 'email_verified_at' => now(),
+                'is_support' => true,
             ],
         );
     }

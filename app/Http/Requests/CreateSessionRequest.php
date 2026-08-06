@@ -42,6 +42,14 @@ final class CreateSessionRequest extends FormRequest
             ]);
         }
 
+        if (! $user->is_support) {
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'email' => 'Only support team users can access the manager app.',
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
 
         return $user;

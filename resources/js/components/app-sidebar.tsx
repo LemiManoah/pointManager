@@ -2,6 +2,7 @@ import { Link } from '@inertiajs/react';
 import { Building2, GitBranch, LayoutDashboard, ShieldCheck, Users } from 'lucide-react';
 import type { ComponentProps } from 'react';
 import AppLogo from '@/components/app-logo';
+import { NavUser } from '@/components/nav-user';
 import {
     Sidebar,
     SidebarContent,
@@ -111,11 +112,8 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
                     </SidebarGroupContent>
                 </SidebarGroup>
             </SidebarContent>
-            <SidebarFooter className="group-data-[collapsible=icon]:hidden">
-                <div className="rounded-md bg-sidebar-accent/50 px-3 py-2 text-xs text-sidebar-foreground/70">
-                    Tenants and branches are created here, then consumed by
-                    PointERP.
-                </div>
+            <SidebarFooter>
+                <NavUser />
             </SidebarFooter>
             <SidebarRail />
         </Sidebar>
