@@ -7,6 +7,7 @@ namespace App\Models;
 use Carbon\CarbonInterface;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,6 +17,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 
 /**
  * @property-read string $id
+ * @property-read string|null $tenant_id
  * @property-read string $name
  * @property-read string $email
  * @property-read CarbonInterface|null $email_verified_at
@@ -25,6 +27,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property-read string|null $two_factor_recovery_codes
  * @property-read CarbonInterface|null $two_factor_confirmed_at
  * @property-read bool $is_support
+ * @property-read bool|null $is_active
  * @property-read CarbonInterface $created_at
  * @property-read CarbonInterface $updated_at
  */
@@ -33,6 +36,15 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
     'remember_token',
     'two_factor_secret',
     'two_factor_recovery_codes',
+])]
+#[Fillable([
+    'tenant_id',
+    'name',
+    'email',
+    'email_verified_at',
+    'password',
+    'is_support',
+    'is_active',
 ])]
 final class User extends Authenticatable implements MustVerifyEmail
 {
@@ -50,6 +62,7 @@ final class User extends Authenticatable implements MustVerifyEmail
     {
         return [
             'id' => 'string',
+            'tenant_id' => 'string',
             'name' => 'string',
             'email' => 'string',
             'email_verified_at' => 'datetime',
@@ -59,6 +72,7 @@ final class User extends Authenticatable implements MustVerifyEmail
             'two_factor_recovery_codes' => 'string',
             'two_factor_confirmed_at' => 'datetime',
             'is_support' => 'boolean',
+            'is_active' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];

@@ -10,6 +10,7 @@ use App\Models\Currency;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 
 final class ManagementReferenceSeeder extends Seeder
 {
@@ -67,14 +68,24 @@ final class ManagementReferenceSeeder extends Seeder
             );
         }
 
+        $supportUserAttributes = [
+            'name' => 'Support Admin',
+            'password' => 'password',
+            'email_verified_at' => now(),
+            'is_support' => true,
+        ];
+
+        if (Schema::hasColumn((new User)->getTable(), 'tenant_id')) {
+            $supportUserAttributes['tenant_id'] = $tenant->id;
+        }
+
+        if (Schema::hasColumn((new User)->getTable(), 'is_active')) {
+            $supportUserAttributes['is_active'] = true;
+        }
+
         User::query()->updateOrCreate(
             ['email' => 'support@pointmanager.test'],
-            [
-                'name' => 'Support Admin',
-                'password' => 'password',
-                'email_verified_at' => now(),
-                'is_support' => true,
-            ],
+            $supportUserAttributes,
         );
     }
 }
