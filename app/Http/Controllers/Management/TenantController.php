@@ -13,6 +13,7 @@ use App\Models\Currency;
 use App\Models\Role;
 use App\Models\Tenant;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -86,7 +87,16 @@ final class TenantController
 
     public function destroy(Tenant $tenant, ToggleTenantStatus $action): RedirectResponse
     {
-        $action->handle($tenant);
+        try {
+            $action->handle($tenant);
+        } catch (ValidationException $validationException) {
+            Inertia::flash('toast', [
+                'type' => 'error',
+                'message' => $validationException->errors()['tenant'][0] ?? $validationException->getMessage(),
+            ]);
+
+            return back();
+        }
 
         return back();
     }
