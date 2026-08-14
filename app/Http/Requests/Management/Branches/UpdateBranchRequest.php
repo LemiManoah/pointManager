@@ -10,6 +10,7 @@ use App\Models\Currency;
 use App\Models\Tenant;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 final class UpdateBranchRequest extends FormRequest
 {
@@ -43,5 +44,30 @@ final class UpdateBranchRequest extends FormRequest
             'country_code' => mb_strtoupper((string) $this->input('country_code')),
             'default_currency_code' => mb_strtoupper((string) $this->input('default_currency_code')),
         ]);
+    }
+
+    public function after(): array
+    {
+        return [
+            function (Validator $validator): void {
+                /** @var Branch $branch */
+                $branch = $this->route('branch');
+                /** @var Tenant|null $tenant */
+                $tenant = Tenant::query()->find($this->input('tenant_id'));
+
+                if (! $tenant instanceof Tenant || $tenant->is_multibranch) {
+                    return;
+                }
+
+                $hasOtherBranch = Branch::query()
+                    ->where('tenant_id', $tenant->id)
+                    ->whereKeyNot($branch->id)
+                    ->exists();
+
+                if ($hasOtherBranch) {
+                    $validator->errors()->add('tenant_id', 'This tenant is configured as single-branch and already has another branch.');
+                }
+            },
+        ];
     }
 }

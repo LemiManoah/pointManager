@@ -11,13 +11,17 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
+use Spatie\Permission\Traits\HasRoles;
 
 /**
  * @property-read string $id
  * @property-read string|null $tenant_id
+ * @property-read string|null $staff_id
  * @property-read string $name
  * @property-read string $email
  * @property-read CarbonInterface|null $email_verified_at
@@ -28,8 +32,10 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property-read CarbonInterface|null $two_factor_confirmed_at
  * @property-read bool $is_support
  * @property-read bool|null $is_active
+ * @property-read bool|null $is_director
  * @property-read CarbonInterface $created_at
  * @property-read CarbonInterface $updated_at
+ * @property-read Pivot $pivot
  */
 #[Hidden([
     'password',
@@ -39,18 +45,22 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 ])]
 #[Fillable([
     'tenant_id',
+    'staff_id',
     'name',
     'email',
     'email_verified_at',
     'password',
     'is_support',
     'is_active',
+    'is_director',
+    'last_login_at',
 ])]
 final class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory;
 
+    use HasRoles;
     use HasUuids;
     use Notifiable;
     use TwoFactorAuthenticatable;
@@ -63,6 +73,7 @@ final class User extends Authenticatable implements MustVerifyEmail
         return [
             'id' => 'string',
             'tenant_id' => 'string',
+            'staff_id' => 'string',
             'name' => 'string',
             'email' => 'string',
             'email_verified_at' => 'datetime',
@@ -73,8 +84,20 @@ final class User extends Authenticatable implements MustVerifyEmail
             'two_factor_confirmed_at' => 'datetime',
             'is_support' => 'boolean',
             'is_active' => 'boolean',
+            'is_director' => 'boolean',
+            'last_login_at' => 'datetime',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
+    }
+
+    /**
+     * @return BelongsToMany<Branch, $this>
+     */
+    public function branches(): BelongsToMany
+    {
+        return $this->belongsToMany(Branch::class)
+            ->withPivot('is_default')
+            ->withTimestamps();
     }
 }

@@ -37,6 +37,11 @@ export type Option = {
     name: string;
 };
 
+type TenantOption = Required<Pick<Option, 'id' | 'code' | 'name'>> & {
+    is_multibranch: boolean;
+    branches_count: number;
+};
+
 type BranchFormData = Record<string, string> & {
     tenant_id: string;
     name: string;
@@ -48,7 +53,7 @@ type BranchFormData = Record<string, string> & {
 
 type Props = {
     branch?: Branch;
-    tenants?: Required<Pick<Option, 'id' | 'code' | 'name'>>[];
+    tenants?: TenantOption[];
     countries?: Option[];
     currencies?: Option[];
 };
@@ -61,8 +66,14 @@ export function BranchDialog({
 }: Props) {
     const [open, setOpen] = useState(false);
     const isEditing = Boolean(branch);
+    const availableTenants = isEditing
+        ? tenants
+        : tenants.filter(
+              (tenant) =>
+                  tenant.is_multibranch || tenant.branches_count === 0,
+          );
     const form = useForm<BranchFormData>({
-        tenant_id: branch?.tenant_id ?? tenants[0]?.id ?? '',
+        tenant_id: branch?.tenant_id ?? availableTenants[0]?.id ?? '',
         name: branch?.name ?? '',
         code: branch?.code ?? '',
         country_code: branch?.country_code ?? countries[0]?.code ?? 'UG',
@@ -70,6 +81,7 @@ export function BranchDialog({
             branch?.default_currency_code ?? currencies[0]?.code ?? 'USD',
         status: branch?.status ?? 'active',
     });
+    const canSubmit = isEditing || availableTenants.length > 0;
 
     function submit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -121,7 +133,7 @@ export function BranchDialog({
                             }
                             className="w-full"
                         >
-                            {tenants.map((tenant) => (
+                            {availableTenants.map((tenant) => (
                                 <NativeSelectOption
                                     key={tenant.id}
                                     value={tenant.id}
@@ -130,6 +142,12 @@ export function BranchDialog({
                                 </NativeSelectOption>
                             ))}
                         </NativeSelect>
+                        {!isEditing && availableTenants.length === 0 && (
+                            <p className="text-sm text-muted-foreground">
+                                All active single-branch tenants already have a
+                                branch.
+                            </p>
+                        )}
                         <InputError message={form.errors.tenant_id} />
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2">
@@ -223,7 +241,10 @@ export function BranchDialog({
                         >
                             Cancel
                         </Button>
-                        <Button type="submit" disabled={form.processing}>
+                        <Button
+                            type="submit"
+                            disabled={form.processing || !canSubmit}
+                        >
                             {form.processing && <Spinner />}
                             Save branch
                         </Button>

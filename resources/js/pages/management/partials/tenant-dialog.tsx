@@ -27,6 +27,7 @@ export type Tenant = {
     name: string;
     default_currency_code: string;
     branches_count: number;
+    client_users_count: number;
     status: 'active' | 'inactive';
     is_multibranch: boolean;
     multi_currency_enabled: boolean;

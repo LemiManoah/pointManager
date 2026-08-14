@@ -15,6 +15,10 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
+import {
+    TenantAdminDialog,
+    type BranchOption,
+} from '../partials/tenant-admin-dialog';
 import { TenantDialog, type Tenant } from '../partials/tenant-dialog';
 
 type CurrencyOption = {
@@ -24,7 +28,9 @@ type CurrencyOption = {
 
 type Props = {
     tenants: Tenant[];
+    branches: BranchOption[];
     currencies: CurrencyOption[];
+    roles: string[];
 };
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -32,7 +38,12 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Tenants', href: '/management/tenants' },
 ];
 
-export default function TenantsIndex({ tenants, currencies }: Props) {
+export default function TenantsIndex({
+    tenants,
+    branches,
+    currencies,
+    roles,
+}: Props) {
     const [search, setSearch] = useState('');
     const [status, setStatus] = useState('active');
     const debouncedSearch = useDebouncedValue(search);
@@ -117,6 +128,9 @@ export default function TenantsIndex({ tenants, currencies }: Props) {
                                             Branches
                                         </th>
                                         <th className="py-3 pr-4 font-medium">
+                                            Users
+                                        </th>
+                                        <th className="py-3 pr-4 font-medium">
                                             Status
                                         </th>
                                         <th className="py-3 text-right font-medium">
@@ -145,6 +159,9 @@ export default function TenantsIndex({ tenants, currencies }: Props) {
                                                 {tenant.branches_count}
                                             </td>
                                             <td className="py-3 pr-4">
+                                                {tenant.client_users_count}
+                                            </td>
+                                            <td className="py-3 pr-4">
                                                 <Badge
                                                     variant={
                                                         tenant.status ===
@@ -158,6 +175,11 @@ export default function TenantsIndex({ tenants, currencies }: Props) {
                                             </td>
                                             <td className="py-3">
                                                 <div className="flex justify-end gap-2">
+                                                    <TenantAdminDialog
+                                                        tenant={tenant}
+                                                        branches={branches}
+                                                        roles={roles}
+                                                    />
                                                     <TenantDialog
                                                         tenant={tenant}
                                                         currencies={currencies}
@@ -192,7 +214,7 @@ export default function TenantsIndex({ tenants, currencies }: Props) {
                                     {filteredTenants.length === 0 && (
                                         <tr>
                                             <td
-                                                colSpan={5}
+                                                colSpan={6}
                                                 className="py-8 text-center text-muted-foreground"
                                             >
                                                 No tenants match the current

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Management\BranchController;
+use App\Http\Controllers\Management\TenantAdminController;
 use App\Http\Controllers\Management\TenantController;
 use App\Http\Controllers\ManagementDashboardController;
 use App\Http\Controllers\SessionController;
@@ -23,6 +24,7 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
 
     Route::prefix('management')->name('management.')->group(function (): void {
         Route::resource('tenants', TenantController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::post('tenants/{tenant}/admins', [TenantAdminController::class, 'store'])->name('tenants.admins.store');
         Route::resource('branches', BranchController::class)->only(['index', 'store', 'update', 'destroy']);
     });
 });

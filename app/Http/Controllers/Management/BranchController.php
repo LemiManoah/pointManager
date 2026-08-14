@@ -36,13 +36,16 @@ final class BranchController
                     'status' => $branch->status,
                 ]),
             'tenants' => Tenant::query()
+                ->withCount('branches')
                 ->where('status', 'active')
                 ->orderBy('name')
-                ->get(['id', 'name', 'code'])
+                ->get(['id', 'name', 'code', 'is_multibranch'])
                 ->map(fn (Tenant $tenant): array => [
                     'id' => $tenant->id,
                     'name' => $tenant->name,
                     'code' => $tenant->code,
+                    'is_multibranch' => $tenant->is_multibranch,
+                    'branches_count' => (int) $tenant->getAttribute('branches_count'),
                 ]),
             'countries' => Country::query()
                 ->where('is_active', true)

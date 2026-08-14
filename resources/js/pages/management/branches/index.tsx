@@ -21,7 +21,10 @@ import {
     type Option,
 } from '../partials/branch-dialog';
 
-type TenantOption = Required<Pick<Option, 'id' | 'code' | 'name'>>;
+type TenantOption = Required<Pick<Option, 'id' | 'code' | 'name'>> & {
+    is_multibranch: boolean;
+    branches_count: number;
+};
 
 type Props = {
     branches: Branch[];

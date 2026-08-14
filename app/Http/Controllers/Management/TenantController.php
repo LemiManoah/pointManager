@@ -8,7 +8,9 @@ use App\Actions\Management\Tenants\SaveTenant;
 use App\Actions\Management\Tenants\ToggleTenantStatus;
 use App\Http\Requests\Management\Tenants\StoreTenantRequest;
 use App\Http\Requests\Management\Tenants\UpdateTenantRequest;
+use App\Models\Branch;
 use App\Models\Currency;
+use App\Models\Role;
 use App\Models\Tenant;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -21,6 +23,7 @@ final class TenantController
         return Inertia::render('management/tenants/index', [
             'tenants' => Tenant::query()
                 ->withCount('branches')
+                ->withCount(['users as client_users_count' => fn ($query) => $query->where('is_support', false)])
                 ->orderBy('name')
                 ->get()
                 ->map(fn (Tenant $tenant): array => [
@@ -33,6 +36,17 @@ final class TenantController
                     'timezone' => $tenant->timezone,
                     'status' => $tenant->status,
                     'branches_count' => (int) $tenant->getAttribute('branches_count'),
+                    'client_users_count' => (int) $tenant->getAttribute('client_users_count'),
+                ]),
+            'branches' => Branch::query()
+                ->where('status', 'active')
+                ->orderBy('name')
+                ->get(['id', 'tenant_id', 'name', 'code'])
+                ->map(fn (Branch $branch): array => [
+                    'id' => $branch->id,
+                    'tenant_id' => $branch->tenant_id,
+                    'name' => $branch->name,
+                    'code' => $branch->code,
                 ]),
             'currencies' => Currency::query()
                 ->where('is_active', true)
@@ -42,6 +56,11 @@ final class TenantController
                     'code' => $currency->code,
                     'name' => $currency->name,
                 ]),
+            'roles' => Role::query()
+                ->where('guard_name', 'web')
+                ->orderBy('name')
+                ->pluck('name')
+                ->values(),
         ]);
     }
 
