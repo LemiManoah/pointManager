@@ -1,5 +1,12 @@
 import { Link } from '@inertiajs/react';
-import { Building2, GitBranch, LayoutDashboard, ShieldCheck, Users } from 'lucide-react';
+import {
+    Building2,
+    GitBranch,
+    Globe2,
+    LayoutDashboard,
+    ShieldCheck,
+    Users,
+} from 'lucide-react';
 import type { ComponentProps } from 'react';
 import AppLogo from '@/components/app-logo';
 import { NavUser } from '@/components/nav-user';
@@ -35,6 +42,12 @@ const items = [
         title: 'Branches',
         href: '/management/branches',
         icon: GitBranch,
+        status: 'ready',
+    },
+    {
+        title: 'Countries',
+        href: '/management/countries',
+        icon: Globe2,
         status: 'ready',
     },
     {
@@ -96,10 +109,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
                                                     </span>
                                                 </>
                                             ) : (
-                                                <Link
-                                                    href={item.href}
-                                                    prefetch
-                                                >
+                                                <Link href={item.href} prefetch>
                                                     <Icon />
                                                     <span>{item.title}</span>
                                                 </Link>

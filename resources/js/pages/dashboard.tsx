@@ -71,7 +71,7 @@ export default function Dashboard({ metrics }: Props) {
                         title="Reference data"
                         value={metrics.countries + metrics.currencies}
                         description={`${formatNumber(metrics.countries)} countries, ${formatNumber(metrics.currencies)} currencies`}
-                        href="/management/tenants"
+                        href="/management/countries"
                         icon={Globe2}
                     />
                     <ManagerCard
@@ -108,14 +108,8 @@ export default function Dashboard({ metrics }: Props) {
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="grid gap-3 text-sm">
-                            <ReadinessRow
-                                label="Tenant CRUD"
-                                status="Ready"
-                            />
-                            <ReadinessRow
-                                label="Branch CRUD"
-                                status="Ready"
-                            />
+                            <ReadinessRow label="Tenant CRUD" status="Ready" />
+                            <ReadinessRow label="Branch CRUD" status="Ready" />
                             <ReadinessRow
                                 label="Support-only login"
                                 status="Ready"
@@ -167,7 +161,11 @@ function ManagerCard({
                     disabled={disabled}
                     asChild={!disabled}
                 >
-                    {disabled ? <span>Restricted</span> : <Link href={href}>Open</Link>}
+                    {disabled ? (
+                        <span>Restricted</span>
+                    ) : (
+                        <Link href={href}>Open</Link>
+                    )}
                 </Button>
             </CardContent>
         </Card>
