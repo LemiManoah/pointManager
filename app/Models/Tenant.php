@@ -17,10 +17,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property-read string $default_currency_code
  * @property-read bool $is_multibranch
  * @property-read bool $multi_currency_enabled
+ * @property-read bool $multi_store_enabled
  * @property-read string $timezone
  * @property-read string $status
+ * @property-read string|null $logo_path
+ * @property-read string|null $logo_url
  */
-#[Fillable(['name', 'code', 'default_currency_code', 'is_multibranch', 'multi_currency_enabled', 'timezone', 'status'])]
+#[Fillable(['name', 'code', 'default_currency_code', 'is_multibranch', 'multi_currency_enabled', 'multi_store_enabled', 'timezone', 'status', 'logo_path', 'logo_url'])]
 final class Tenant extends Model
 {
     use HasUuids;
@@ -35,6 +38,7 @@ final class Tenant extends Model
             'id' => 'string',
             'is_multibranch' => 'boolean',
             'multi_currency_enabled' => 'boolean',
+            'multi_store_enabled' => 'boolean',
             'deleted_at' => 'datetime',
         ];
     }

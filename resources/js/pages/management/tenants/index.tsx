@@ -26,10 +26,13 @@ type CurrencyOption = {
     name: string;
 };
 
+type CountryOption = { code: string; name: string };
+
 type Props = {
     tenants: Tenant[];
     branches: BranchOption[];
     currencies: CurrencyOption[];
+    countries: CountryOption[];
     roles: string[];
 };
 
@@ -42,6 +45,7 @@ export default function TenantsIndex({
     tenants,
     branches,
     currencies,
+    countries,
     roles,
 }: Props) {
     const [search, setSearch] = useState('');
@@ -101,7 +105,7 @@ export default function TenantsIndex({
                                 </TabsTrigger>
                             </TabsList>
                         </Tabs>
-                        <TenantDialog currencies={currencies} />
+                        <TenantDialog currencies={currencies} countries={countries} />
                     </div>
                 </div>
 
