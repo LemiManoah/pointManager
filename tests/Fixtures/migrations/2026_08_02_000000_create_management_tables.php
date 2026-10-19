@@ -10,6 +10,12 @@ return new class extends Migration
 {
     public function up(): void
     {
+        $tables = ['currencies', 'countries', 'tenants', 'branches'];
+        $existing = array_filter($tables, fn (string $name): bool => Schema::hasTable($name));
+        if ($existing !== [] && count($existing) !== count($tables)) {
+            throw new RuntimeException('The shared management schema is incomplete. Repair it from the ERP migrations before migrating the manager app.');
+        }
+
         if (! Schema::hasTable('currencies')) {
             Schema::create('currencies', function (Blueprint $table): void {
                 $table->char('code', 3)->primary();
@@ -72,9 +78,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('branches');
-        Schema::dropIfExists('tenants');
-        Schema::dropIfExists('countries');
-        Schema::dropIfExists('currencies');
+        // Management reference tables are shared with the ERP and must not be dropped here.
     }
 };

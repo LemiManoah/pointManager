@@ -20,11 +20,33 @@ return new class extends Migration
         throw_if(empty($tableNames), 'Error: config/permission.php not loaded. Run [php artisan config:clear] and try again.');
         throw_if($teams && empty($columnNames['team_foreign_key'] ?? null), 'Error: team_foreign_key on config/permission.php not loaded. Run [php artisan config:clear] and try again.');
 
+        $permissionTables = [
+            $tableNames['permissions'],
+            $tableNames['roles'],
+            $tableNames['model_has_permissions'],
+            $tableNames['model_has_roles'],
+            $tableNames['role_has_permissions'],
+        ];
+        $existing = array_filter($permissionTables, fn (mixed $name): bool => is_string($name) && Schema::hasTable($name));
+        if (count($existing) === count($permissionTables)) {
+            if (! Schema::hasColumn($tableNames['model_has_roles'], $columnNames['model_morph_key'])
+                || ! Schema::hasColumn($tableNames['model_has_permissions'], $columnNames['model_morph_key'])
+                || in_array(Schema::getColumnType($tableNames['roles'], 'id'), ['bigint', 'integer'], true)
+                || in_array(Schema::getColumnType($tableNames['permissions'], 'id'), ['bigint', 'integer'], true)) {
+                throw new RuntimeException('The shared permission tables do not use the ERP UUID schema. Do not migrate until their structure is reconciled.');
+            }
+
+            return;
+        }
+        if ($existing !== []) {
+            throw new RuntimeException('The shared permission schema is incomplete. Repair it from the ERP migrations before migrating the manager app.');
+        }
+
         /**
          * See `docs/prerequisites.md` for suggested lengths on 'name' and 'guard_name' if "1071 Specified key was too long" errors are encountered.
          */
         Schema::create($tableNames['permissions'], static function (Blueprint $table) {
-            $table->id(); // permission id
+            $table->uuid('id')->primary(); // permission id
             $table->string('name');
             $table->string('guard_name');
             $table->timestamps();
@@ -36,7 +58,7 @@ return new class extends Migration
          * See `docs/prerequisites.md` for suggested lengths on 'name' and 'guard_name' if "1071 Specified key was too long" errors are encountered.
          */
         Schema::create($tableNames['roles'], static function (Blueprint $table) use ($teams, $columnNames) {
-            $table->id(); // role id
+            $table->uuid('id')->primary(); // role id
             if ($teams || config('permission.testing')) { // permission.testing is a fix for sqlite testing
                 $table->unsignedBigInteger($columnNames['team_foreign_key'])->nullable();
                 $table->index($columnNames['team_foreign_key'], 'roles_team_foreign_key_index');
@@ -52,18 +74,18 @@ return new class extends Migration
         });
 
         Schema::create($tableNames['model_has_permissions'], static function (Blueprint $table) use ($tableNames, $columnNames, $pivotPermission, $teams) {
-            $table->unsignedBigInteger($pivotPermission);
+            $table->uuid($pivotPermission);
 
             $table->string('model_type');
-            $table->unsignedBigInteger($columnNames['model_morph_key']);
-            $table->index([$columnNames['model_morph_key'], 'model_type'], 'model_has_permissions_model_id_model_type_index');
+            $table->uuid($columnNames['model_morph_key']);
+            $table->index([$columnNames['model_morph_key'], 'model_type'], 'model_has_permissions_model_uuid_model_type_index');
 
             $table->foreign($pivotPermission)
                 ->references('id') // permission id
                 ->on($tableNames['permissions'])
                 ->cascadeOnDelete();
             if ($teams) {
-                $table->unsignedBigInteger($columnNames['team_foreign_key']);
+            $table->unsignedBigInteger($columnNames['team_foreign_key']);
                 $table->index($columnNames['team_foreign_key'], 'model_has_permissions_team_foreign_key_index');
 
                 $table->primary([$columnNames['team_foreign_key'], $pivotPermission, $columnNames['model_morph_key'], 'model_type'],
@@ -75,11 +97,11 @@ return new class extends Migration
         });
 
         Schema::create($tableNames['model_has_roles'], static function (Blueprint $table) use ($tableNames, $columnNames, $pivotRole, $teams) {
-            $table->unsignedBigInteger($pivotRole);
+            $table->uuid($pivotRole);
 
             $table->string('model_type');
-            $table->unsignedBigInteger($columnNames['model_morph_key']);
-            $table->index([$columnNames['model_morph_key'], 'model_type'], 'model_has_roles_model_id_model_type_index');
+            $table->uuid($columnNames['model_morph_key']);
+            $table->index([$columnNames['model_morph_key'], 'model_type'], 'model_has_roles_model_uuid_model_type_index');
 
             $table->foreign($pivotRole)
                 ->references('id') // role id
@@ -98,8 +120,8 @@ return new class extends Migration
         });
 
         Schema::create($tableNames['role_has_permissions'], static function (Blueprint $table) use ($tableNames, $pivotRole, $pivotPermission) {
-            $table->unsignedBigInteger($pivotPermission);
-            $table->unsignedBigInteger($pivotRole);
+            $table->uuid($pivotPermission);
+            $table->uuid($pivotRole);
 
             $table->foreign($pivotPermission)
                 ->references('id') // permission id
@@ -124,14 +146,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        $tableNames = config('permission.table_names');
-
-        throw_if(empty($tableNames), 'Error: config/permission.php not found and defaults could not be merged. Please publish the package configuration before proceeding, or drop the tables manually.');
-
-        Schema::dropIfExists($tableNames['role_has_permissions']);
-        Schema::dropIfExists($tableNames['model_has_roles']);
-        Schema::dropIfExists($tableNames['model_has_permissions']);
-        Schema::dropIfExists($tableNames['roles']);
-        Schema::dropIfExists($tableNames['permissions']);
+        // These tables are shared with the ERP. Never drop them from the manager app.
     }
 };
